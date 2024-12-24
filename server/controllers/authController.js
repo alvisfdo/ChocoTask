@@ -102,18 +102,23 @@ export const verifyToken = async (req, res) => {
     const { token } = req.params; 
 
     const user = await User.findOne({ resetPasswordToken: token, resetPasswordExpire: { $gt: Date.now() } });
+    const {nodeEnv, setNodeEnv} = process.env.FRONTEND_URL;
+
+    if(process.env.NODE_ENV=='PRODUCTION'){
+      setNodeEnv = `${req.protocol}://${req.get('host')}`;
+    }
     
     if (!user) {
-      res.redirect(`${process.env.FRONTEND_URL}/log-in?msg=invalid`)
+      res.redirect(`${nodeEnv}/log-in?msg=invalid`)
     }
 
     // user.password = req.body.password;
     
     await user.save();
-    res.redirect(`${process.env.FRONTEND_URL}/reset-password?token=${token}`);
+    res.redirect(`${nodeEnv}/reset-password?token=${token}`);
     
   }catch(error){
-    res.redirect(`${process.env.FRONTEND_URL}/log-in?msg=error`);
+    res.redirect(`${nodeEnv}/log-in?msg=error`);
   }
 };
 
